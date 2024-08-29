@@ -1,0 +1,75 @@
+kisumu/
+├── cmd/
+│   ├── kisumu/
+│   │   └── main.go            # Entry point of the interpreter
+│   ├── formatter/
+│   │   └── formatter.go       # Code formatter for kisumu
+│   ├── linter/
+│   │   └── linter.go          # Linter for kisumu code
+│   ├── dependency/
+│   │   └── manager.go         # Dependency manager (if needed)
+├── pkg/
+│   ├── parser/
+│   │   ├── parser.go          # Parses .ksm files
+│   │   └── token.go           # Token definitions and related functions
+│   ├── interpreter/
+│   │   ├── interpreter.go    # Executes parsed code
+│   │   └── eval.go            # Evaluation of expressions
+│   ├── ast/
+│   │   ├── ast.go             # Abstract Syntax Tree (AST) definitions
+│   │   └── node.go            # AST node definitions
+│   ├── object/
+│   │   ├── object.go          # Object data structures and methods
+│   │   ├── number.go          # Number data structure
+│   │   ├── string.go          # String data structure
+│   │   ├── boolean.go         # Boolean data structure
+│   │   ├── null.go            # Null data structure
+│   │   ├── array.go           # Array data structure
+│   │   └── hash.go            # Object/Hash data structure
+│   ├── utils/
+│   │   ├── utils.go           # Utility functions
+│   │   └── errors.go          # Custom error types and handling
+│   ├── analyzer/
+│   │   └── analyzer.go        # Static code analyzer for common mistakes
+├── examples/
+│   └── example.ksm            # Sample kisumu code for testing
+├── test/
+│   ├── parser_test.go         # Tests for the parser
+│   ├── interpreter_test.go    # Tests for the interpreter
+│   ├── object_test.go         # Tests for object data structures
+│   ├── formatter_test.go      # Tests for the code formatter
+│   ├── linter_test.go         # Tests for the linter
+│   ├── analyzer_test.go       # Tests for the static code analyzer
+│   └── utils_test.go          # Tests for utility functions
+├── .gitignore
+├── go.mod
+├── go.sum
+├── Makefile                   # Build automation script
+├── README.md
+└── .github/
+    └── workflows/
+        └── ci.yml             # Continuous Integration (CI) configuration
+
+
+
+
+
+Breakdown:
+
+   cmd/formatter/: Contains the code formatter implementation for kisumu. This tool will format kisumu code according to predefined style rules.
+
+    cmd/linter/: Contains the linter implementation for kisumu. It enforces coding standards and checks for potential issues in kisumu code.
+
+    cmd/dependency/: Contains the dependency manager if your project requires managing libraries or modules for kisumu.
+
+    pkg/analyzer/: Contains the static code analyzer to scan for common coding mistakes or potential issues in kisumu code.
+
+    test/formatter_test.go: Tests for the code formatter.
+
+    test/linter_test.go: Tests for the linter.
+
+    test/analyzer_test.go: Tests for the static code analyzer.
+
+    Makefile: Automates the build process, including running tests, formatting code, linting, and other tasks.
+
+    .github/workflows/ci.yml: Configuration for Continuous Integration (CI), which runs automated tests, linting, and other checks on each code change.
