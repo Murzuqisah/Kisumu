@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	bytes, _ := os.ReadFile("/examples/00.ksm")
+	bytes, _ := os.ReadFile("/examples/example.ksm")
 	source := string(bytes)
 
 	fmt.Printf("Code: %s", source)

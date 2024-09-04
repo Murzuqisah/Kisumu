@@ -1,0 +1,36 @@
+Stack-based language
+
+Operations:
+> push
+> pop
+> add
+> sub
+> jump.eq.0
+> print
+> read
+> jump.gt.0
+> halt//
+
+
+interpreter.go
+- retrieve the program file path from command line
+- parse the program file
+- use a token counter to keep track of the program file
+- split the program file into tokens
+- if the Operation code ends with a token then the program file is split into tokens and
+executes the operation
+
+Tokenization: The goal of tokenization is to split the file/input into a stream of character/tokens that can easily understood.
+> It is the process of analyzing a string of symbols, either in natural language, computer languages(machine code) or data structures.
+> Split source code into meaningful tokens.
+
+AST(abstract syntax tree)
+> DS that represents the program's structure.
+> Produced by processing the tokens received from the lexer(parsing).
+> Pratt Parsing technique
+
+> REPL(Read-Eval-Print-Loop) ~ interactive programming environment that allows users to enter code, which is then executed and its results is displayed immediately.
+    ~ Read: read user input
+    ~ Eval: evaluates the code by executing it
+    ~ Print: prints the result of the execution
+    ~ Loop: loop back to read the next input

@@ -1,0 +1,146 @@
+Introduction
+
+> To understand interpreters, you first need to understand how lexers and parsers work.
+> An elaboraye interpreter evaluates the input, compiles it into an internal representation called `bytecode` and then evaluates it.
+> "tree-walking" interpreters parse the source code, builds an abstract syntax tree(AST) out of it and then evaluates the tree; hence walking the tree while interpreting it.
+> Requirements for language development:
+    - lexers
+    - parsers
+    - tree representation
+    - evaluator
+> Features of `Kisumu` language:
+    - strong typing
+    - garbage collection
+    - explicit support for concurrent programming
+    - syntax (*no need for semi-colons(;) to perform execution)
+    - variable binding (Golang syntax: var age int = 1 
+        var name string = "Monkey"
+        var result = 10 * (10 / 2)
+        *arrays:
+        var array = []int{1,2,3.4}
+        array := []int{1,2,3.4}
+
+        var array = []string{"hello", "world", "how", "are", "you"}
+        array := []string{"hello", "world", "how", "are", "you"}
+
+        *hashes:
+        var hash = {"name": "World", "age": 2024}
+        
+        *accessing hashes: array[0] -> 1
+        hash["name"] -> "World")
+
+        use of let 
+    - integers and booleans
+    - arithmetic expressions
+    - built-in functions
+    - first-class and higher-order functions
+    - closures
+    - a string data structure
+    - an array data structure
+    - a hash data structure
+
+
+
+Language Definition structure & workflow:
+
+source code 
+    ~ scanning
+- tokens
+    ~ parsing
+- syntax Tree
+    ~ analysis
+- intermediate representation(s)
+    ~ optimizing
+    ~ transpiling
+- High
+    ~ code generation
+    ~ transpiling
+- bytecode
+- machine code
+
+
+Points to note:
+~ Additional language requirements include:
+    - documentation
+    - debuggers
+    - editor support
+    - syntax highlighting
+    - 
+
+~ Areas of focus:
+    - Recursion
+    - dynamic arrays
+    - trees
+    - graphs
+    - hash tables
+
+~ Compiler-compilers: // not to use in this case
+ Automatically generate source files for an implementation from some higher level languages.
+    - Lex
+    - Yacc
+
+
+Syntax Definition:
+> A way of describing formal languages.
+> Two notations are popular:
+    - Backus-Naur form(BNF)
+        ~ Developed by John Backus and Peter Naur, BNF is applied whrever exact descriptions of languages are needed.
+        ~ Can be used to describe formats, instruction sets, and communication protocols.
+        ~ Formats created from the original BNF are extended BNF(EBNF) and audmented BNF(ABNF).
+        Components of BNF(deviation rules):
+        - a set of non-terminal symbols
+        - a set of terminal symbols
+        - rules for replacing non-terminal symbols with a sequence of symbols.
+
+        <symbol> ::= __expression__
+
+        symbol: non-terminal variable that is always enclosed between <> pair.
+        ::= means symbol must be replaced by the expression.
+        __expression__ : consists of one/more sequences of either terminal/non-terminal symbols.
+        Examples: in defining an arithmetic expression
+            In some later metalanguages, such as Schorre's META II, the BNF recursive repeat construct 
+            is replaced by a sequence operator and target language symbols defined using quoted strings.
+            The < and > brackets were removed. Parentheses () for mathematical grouping were added.
+            <expr> ::= <term>|<expr><addop><term>
+
+            EXPR = TERM $('+' TERM .OUT('ADD') | '-' TERM .OUT('SUB'));
+
+            later changed to a simpler syntax in ALGOL:
+            <integer> ::= <digit>|<integer><digit>
+        
+    - Wirth syntax notation(WSN)
+        ~ Developed by Niklaus Wirth as an alternative to BNF.
+        ~ It contains an explicit iteration construct, and it avoids the use of an explicit symbol for the empty string(such as <empty>)
+        ~ Used to define the syntax of EXPRESS, the data modelling language of STEP.
+
+            SYNTAX     = { PRODUCTION } .
+            PRODUCTION = IDENTIFIER "=" EXPRESSION "." .
+            EXPRESSION = TERM { "|" TERM } .
+            TERM       = FACTOR { FACTOR } .
+            FACTOR     = IDENTIFIER
+                        | LITERAL
+                        | "[" EXPRESSION "]"
+                        | "(" EXPRESSION ")"
+                        | "{" EXPRESSION "}" .
+            IDENTIFIER = letter { letter } .
+            LITERAL    = """" character { character } """" .
+
+            `=` indicates a production.
+            `{}` denotes repetition.
+            `[a]b` expresses optionality.
+            ``
+
+
+Fibonacci sequence: recursivity
+~   let fibonacci = fn(x)
+    if (x==0) {
+        0
+    } else {
+        if (x==1) {
+            1
+        } else {
+            fibonacci(x-1) + (x-2)
+        }
+    }
+
+- Higher order functions take other functions as argument.
