@@ -1,6 +1,8 @@
 package parser
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type TokenType string
 
@@ -17,7 +19,7 @@ type Lexer struct { // position and readPosition are used to access characters i
 }
 
 const (
-	ILLEGAL TokenType = "IILEGAL" // Invalid token/unknown character
+	ILLEGAL TokenType = "ILLEGAL" // Invalid token/unknown character
 	EOF     TokenType = "EOF"     // End of file
 
 	// Identifiers and literals
@@ -111,6 +113,32 @@ func (token Token) Debug() {
 	}
 }
 
+// readIdentifier extracts a sequence of characters from the input that form an identifier.
+// It continues reading characters until it encounters a non-identifier character (e.g., whitespace or punctuation).
+//
+// Parameters:
+// - l: A pointer to the Lexer struct. This function is a method of the Lexer struct, so it has access to its fields and methods.
+//
+// Returns:
+// - A string representing the extracted identifier.
+
+func IsLetter(s string) bool {
+	for _, char := range s {
+		if char >= 'a' && char <= 'z' || char >= 'A' && char <= 'Z' {
+			return true
+		}
+	}
+	return false
+}
+
+func (l *Lexer) readIdentifier() string {
+	startPosition := l.position
+	for IsLetter(string(l.currentChar)) || l.currentChar == '_' {
+		l.getChar()
+	}
+	return l.input[startPosition:l.position]
+}
+
 // Function used to create a lexer
 func NewToken(Type TokenType, value string) Token {
 	return Token{
@@ -118,17 +146,25 @@ func NewToken(Type TokenType, value string) Token {
 	}
 }
 
+// Tokenize initializes and returns a new Lexer instance with the given input string.
+// The Lexer is responsible for breaking down the input string into a sequence of tokens.
+//
+// Parameters:
+// - input: A string containing the source code to be tokenized.
+//
+// Returns:
+// - A pointer to a new Lexer instance, initialized with the provided input string.
 func Tokenize(input string) *Lexer {
-	tok := &Lexer{input: input}
-	tok.getNextChar()
-	return tok
+	tok := &Lexer{input: input} // Create a new Lexer instance with the given input string
+	tok.getChar()               // Initialize the current character and position of the lexer
+	return tok                  // Return the initialized Lexer instance
 }
 
 // getNextChar advances the lexer to the next character in the input string.
 // It updates the current character (currentChar), the current position (position),
 // and the read position (readPosition). If the read position is at or beyond the end of the input string,
 // the current character is set to 0.
-func (tokens *Lexer) getNextChar() {
+func (tokens *Lexer) getChar() {
 	if tokens.readPosition >= len(tokens.input) {
 		tokens.currentChar = 0 // ASCII code -> NULL
 	} else {
@@ -136,4 +172,181 @@ func (tokens *Lexer) getNextChar() {
 	}
 	tokens.position = tokens.readPosition
 	tokens.readPosition++
+}
+
+func (l *Lexer) peekChar() rune {
+	if l.readPosition >= len(l.input) {
+		return 0 // End of input
+	}
+	return rune(l.input[l.readPosition])
+}
+
+func (l *Lexer) skipWhitespace() {
+	for l.currentChar == '\\' || l.currentChar == '\t' || l.currentChar == '\n' || l.currentChar == '\r' {
+		l.getChar()
+	}
+}
+
+func (l *Lexer) readNumber() string {
+	var number string
+
+	for IsDigit(string(l.currentChar)) {
+		number += string(l.currentChar)
+		l.getChar() // read & fetch the character
+	}
+
+	if l.currentChar == '.' {
+		number += string(l.currentChar)
+		l.getChar() // read & fetch the character
+
+		for IsDigit(string(l.currentChar)) {
+			number += string(l.currentChar)
+		}
+	}
+	return number
+}
+
+func IsDigit(s string) bool {
+	for _, char := range s {
+		if char >= '0' && char <= '9' {
+			return true
+		}
+	}
+	return false
+}
+
+func (l *Lexer) GetNextToken() Token {
+	var tok Token
+
+	l.skipWhitespace()
+
+	switch l.currentChar {
+	case '[':
+		tok = newToken(OPEN_BRACKET, string(l.currentChar))
+	case ']':
+		tok = newToken(CLOSE_BRACKET, string(l.currentChar))
+	case '{':
+		tok = newToken(OPEN_CURLY, string(l.currentChar))
+	case '}':
+		tok = newToken(CLOSE_CURLY, string(l.currentChar))
+	case '(':
+		tok = newToken(OPEN_PARENTHESES, string(l.currentChar))
+	case ')':
+		tok = newToken(CLOSE_PARENTHESES, string(l.currentChar))
+	case '=':
+		if l.peekChar() == '=' {
+			l.getChar()
+			tok = newToken(EQUALS, "==")
+		} else {
+			tok = newToken(ASSIGNMENT, string(l.currentChar))
+		}
+	case '+':
+		if l.peekChar() == '+' {
+			l.getChar()
+			tok = newToken(PLUS_PLUS, "++")
+		} else if l.peekChar() == '=' {
+			l.getChar()
+			tok = newToken(PLUS_EQUALS, "+=")
+		} else {
+			tok = newToken(PLUS, string(l.currentChar))
+		}
+	case '-':
+		if l.peekChar() == '-' {
+			l.getChar()
+			tok = newToken(MINUS_MINUS, "--")
+		} else if l.peekChar() == '=' {
+			l.getChar()
+			tok = newToken(MINUS_EQUALS, "-=")
+		} else {
+			tok = newToken(DASH, string(l.currentChar))
+		}
+	case '!':
+		if l.peekChar() == '=' {
+			l.getChar()
+			tok = newToken(NOT_EQUALS, "!=")
+		} else {
+			tok = newToken(NOT, string(l.currentChar))
+		}
+	case '*':
+		if l.peekChar() == '=' {
+			l.getChar()
+			tok = newToken(STAR_EQUALS, "*=")
+		} else {
+			tok = newToken(STAR, string(l.currentChar))
+		}
+	case '/':
+		if l.peekChar() == '=' {
+			l.getChar()
+			tok = newToken(SLASH_EQUALS, "/=")
+		} else {
+			tok = newToken(SLASH, string(l.currentChar))
+		}
+	case '<':
+		if l.peekChar() == '=' {
+			l.getChar()
+			tok = newToken(LESS_EQUAL, "<=")
+		} else {
+			tok = newToken(LESS, string(l.currentChar))
+		}
+	case '>':
+		if l.peekChar() == '=' {
+			l.getChar()
+			tok = newToken(GREATER_EQUALS, ">=")
+		} else {
+			tok = newToken(GREATER, string(l.currentChar))
+		}
+	case '|':
+		if l.peekChar() == '|' {
+			l.getChar()
+			tok = newToken(OR, "||")
+		}
+	case '&':
+		if l.peekChar() == '&' {
+			l.getChar()
+			tok = newToken(AND, "&&")
+		}
+	case '.':
+		if l.peekChar() == '.' {
+			l.getChar()
+			if l.peekChar() == '.' {
+				l.getChar()
+				tok = newToken(DOT_DOT, "...")
+			} else {
+				tok = newToken(DOT, string(l.currentChar))
+			}
+		} else {
+			tok = newToken(DOT, string(l.currentChar))
+		}
+	case ';':
+		tok = newToken(SEMI_COLON, string(l.currentChar))
+	case ':':
+		tok = newToken(COLON, string(l.currentChar))
+	case '?':
+		tok = newToken(QUESTION, string(l.currentChar))
+	case ',':
+		tok = newToken(COMMA, string(l.currentChar))
+	case 0:
+		tok = newToken(EOF, "")
+	default:
+		if IsLetter(string(l.currentChar)) || l.currentChar == '_' {
+			ident := l.readIdentifier()
+			tok = newToken(IDENTIFIER, ident)
+		} else if IsDigit(string(l.currentChar)) {
+			tok = newToken(INT, l.readNumber())
+		} else if l.currentChar == ' ' || l.currentChar == '\t' || l.currentChar == '\n' || l.currentChar == '\r' {
+			tok = newToken(WHITESPACE, string(l.currentChar))
+		} else {
+			tok = newToken(ILLEGAL, string(l.currentChar))
+		}
+	}
+
+	l.getChar()
+	return tok
+}
+
+func newToken(tokenType TokenType, currentChar string) Token {
+	return Token{
+		Type:    tokenType,
+		Literal: currentChar,
+	}
 }
