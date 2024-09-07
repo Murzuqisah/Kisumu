@@ -11,12 +11,8 @@ import (
 const PROMPT = "kisumu> "
 
 // Start is a read-eval-print loop (REPL) for the Kisumu programming language.
-// It continuously reads input from the provided reader, parses it into an abstract syntax tree (AST),
-// evaluates the AST using the provided environment, and writes the result to the provided writer.
-//
-// Parameters:
-// - in: An io.Reader from which to read input.
-// - out: An io.Writer to which to write output.
+// It continuously reads input from the provided reader, tokenizes it,
+// and writes the token type and literal to the provided writer.
 func Start(in io.Reader, out io.Writer) {
 	scanner := bufio.NewScanner(in)
 	writer := bufio.NewWriter(out)
@@ -35,53 +31,43 @@ func Start(in io.Reader, out io.Writer) {
 		}
 
 		line := scanner.Text()
-		tree := parser.Tokenize(line)
+		lexer := parser.Tokenize(line)
 
-		for tok := tree.GetNextToken(); tok.Type != parser.EOF; tok = tree.GetNextToken() {
-			fmt.Fprintf(writer, "Token: %s (%s)\n", tok.Type, tok.Literal)
+		for {
+			tok := lexer.GetNextToken()
+			if tok.Type == parser.EOF {
+				break
+			}
+			if tok.Type == parser.ILLEGAL {
+				fmt.Fprintf(writer, "Illegal token: %s\n", tok.Literal)
+			} else {
+				fmt.Fprintf(writer, "Token: %s (%s)\n", tok.Type, tok.Literal)
+			}
 		}
-
-		writer.Flush()  // write results to the output
+		writer.Flush() // Ensure output is written
 	}
 }
 
 type REPL struct {
 	prompt string
-	ksm    *parser.Lexer
-	parser *parser.Lexer
-	env    *parser.Lexer
-	runner *parser.Lexer
+	lexer  *parser.Lexer
+	// ksm    *lexer
+	// parser *parser
+	// env    *Environment
+	// runner *runner
 	input  *bufio.Reader
 	output *bufio.Writer
 }
 
-func NewREPL(prompt string, ksm, parser, env, runner *parser.Lexer, input *bufio.Reader, output *bufio.Writer) *REPL {
+func NewREPL(prompt string, lexer *parser.Lexer, input *bufio.Reader, output *bufio.Writer) *REPL {
 	return &REPL{
 		prompt: prompt,
-		ksm:    ksm,
-		parser: parser,
-		env:    env,
-		runner: runner,
+		lexer:  lexer,
+		// ksm:    ksm,
+		// parser: parser,
+		// env:    env,
+		// runner: runner,
 		input:  input,
 		output: output,
-	}
-}
-
-func (r *REPL) Start() {
-	for {
-		fmt.Fprintf(r.output, r.prompt)
-		r.output.Flush() // Ensure prompt is printed before reading input
-		scanned, err := r.input.ReadString('\n')
-		if err != nil {
-			if err == io.EOF {
-				break // Exit loop on end of input
-			}
-			fmt.Fprintf(r.output, "Error reading input: %v\n", err)
-			continue
-		}
-
-		// TODO: Add parsing, evaluating, and writing results here
-		fmt.Fprintf(r.output, "You typed: %s", scanned)
-		r.output.Flush() // Ensure output is written
 	}
 }
