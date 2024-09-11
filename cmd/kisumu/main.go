@@ -20,11 +20,7 @@ func main() {
 		fmt.Printf("Error getting user: %v", err)
 		os.Exit(1)
 	}
-	fmt.Printf("Current user: %s\n", user.Username)
-	fmt.Printf("Home directory: %s\n", user.HomeDir)
-	fmt.Printf("Go version: %s\n", runtime.Version())
-	fmt.Printf("Operating system: %s\n", runtime.GOOS)
-	fmt.Printf("Architecture: %s\n", runtime.GOARCH)
+	fmt.Printf("%s/%s\n", user.Username, runtime.GOOS)
 	fmt.Println("Kisumu version: 0.1.0")
 
 	fmt.Println("\nWelcome to the Kisumu programming language!")
