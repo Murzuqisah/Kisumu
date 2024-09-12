@@ -18,7 +18,7 @@ func Start(in io.Reader, out io.Writer) {
 	writer := bufio.NewWriter(out)
 
 	for {
-		fmt.Fprintln(writer, PROMPT)
+		fmt.Fprint(writer, PROMPT)
 		writer.Flush() // Ensure prompt is printed before reading input
 
 		if !scanner.Scan() {
