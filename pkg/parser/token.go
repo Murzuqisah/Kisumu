@@ -67,28 +67,32 @@ const (
 	SLASH_EQUALS TokenType = "SLASH_EQUALS" // /=
 	STAR_EQUALS  TokenType = "STAR_EQUALS"  // *=
 
-	PLUS    TokenType = "PLUS"    // +
-	DASH    TokenType = "DASH"    // -
-	SLASH   TokenType = "SLASH"   // /
-	STAR    TokenType = "STAR"    // *
-	PERCENT TokenType = "PERCENT" // %
+	PLUS     TokenType = "PLUS"     // +
+	DASH     TokenType = "DASH"     // -
+	SLASH    TokenType = "SLASH"    // /
+	ASTERISK TokenType = "ASTERISK" // *
+	PERCENT  TokenType = "PERCENT"  // %
 
 	/* ====== RESERVED KEYWORDS ======= */
-	LET     TokenType = "LET"     // let
-	CONST   TokenType = "CONST"   // const
-	CLASS   TokenType = "CLASS"   // class
-	NEW     TokenType = "NEW"     // new
-	IMPORT  TokenType = "IMPORT"  // import
-	FROM    TokenType = "FROM"    // from
-	FN      TokenType = "FN"      // fn
-	IF      TokenType = "IF"      // if
-	ELSE    TokenType = "ELSE"    // else
-	FOREACH TokenType = "FOREACH" // foreach
-	WHILE   TokenType = "WHILE"   // while
-	FOR     TokenType = "FOR"     // for
-	EXPORT  TokenType = "EXPORT"  // export
-	TYPEOF  TokenType = "TYPEOF"  // typeof
-	IN      TokenType = "IN"      // in
+	LET      TokenType = "LET"      // let
+	CONST    TokenType = "CONST"    // const
+	CLASS    TokenType = "CLASS"    // class
+	NEW      TokenType = "NEW"      // new
+	IMPORT   TokenType = "IMPORT"   // import
+	FROM     TokenType = "FROM"     // from
+	FN       TokenType = "FN"       // fn
+	IF       TokenType = "IF"       // if
+	ELSE     TokenType = "ELSE"     // else
+	FOREACH  TokenType = "FOREACH"  // foreach
+	WHILE    TokenType = "WHILE"    // while
+	FOR      TokenType = "FOR"      // for
+	EXPORT   TokenType = "EXPORT"   // export
+	TYPEOF   TokenType = "TYPEOF"   // typeof
+	IN       TokenType = "IN"       // in
+	RETURN   TokenType = "RETURN"   // return
+	BREAK    TokenType = "BREAK"    // break
+	CONTINUE TokenType = "CONTINUE" // continue
+
 )
 
 func (token Token) isAmongDefined(expectedTokens ...TokenType) bool {
@@ -272,7 +276,7 @@ func (l *Lexer) GetNextToken() Token {
 			l.getChar()
 			tok = newToken(STAR_EQUALS, "*=")
 		} else {
-			tok = newToken(STAR, string(l.currentChar))
+			tok = newToken(ASTERISK, string(l.currentChar))
 		}
 	case '/':
 		if l.peekChar() == '=' {
