@@ -1,40 +1,65 @@
 package parser_test
 
 import (
-	"testing"
-
+	"kisumu/pkg/ast"
 	"kisumu/pkg/parser"
+	"testing"
 )
 
-type Token struct {
-	expectedType    parser.TokenType
-	expectedLiteral string
-}
+func TestLetStatements(t *testing.T) {
+	input := `
+    let x = 5;
+    let y = 10;
+    let foobar = 8 * 2 + y;
+    `
 
-var expectedTokens = []Token{
-	{
-		expectedType:    parser.OPEN_BRACKET,
-		expectedLiteral: "[",
-	},
-	{
-		expectedType:    parser.IDENTIFIER,
-		expectedLiteral: "hello",
-	},
-	{
-		expectedType:    parser.CLOSE_BRACKET,
-		expectedLiteral: "]",
-	},
-}
+	l := parser.Tokenize(input)
+	p := parser.NewParser(l)
+	program := p.ParseProgram()
+	// checkParserErrors(t, l)
+	if program == nil {
+		t.Fatalf("Expected a program, got nil")
+	}
 
-func TestTokenize(t *testing.T) {
-	source := `[hello ]` // l.skipWhitespace() is defined in parser/lexer.go, it skips whitespace before parsing tokens
+	if len(program.Statements) != 3 {
+		t.Fatalf("Expected 3 statements, got %d", len(program.Statements))
+	}
 
-	ksm := parser.Tokenize(source)
+	tests := []struct {
+		expectedIdentifier string
+		expectedValue      int
+	}{
+		{"x", 5},
+		{"y", 10},
+		{"foobar", 26},
+	}
 
-	for i, tt := range expectedTokens {
-		tokens := ksm.GetNextToken()
-		if string(tokens.Type) != string(tt.expectedType) || tokens.Literal != tt.expectedLiteral {
-			t.Fatalf("Expected token %d to be {%v, %s}, but got {%v, %s}", i, tt.expectedType, tt.expectedLiteral, tokens.Type, tokens.Literal)
+	for i, tc := range tests {
+		stmt := program.Statements[i]
+		if !testLetStatement(t, stmt, tc.expectedIdentifier, tc.expectedValue) {
+			return
 		}
 	}
+}
+
+func testLetStatement(t *testing.T, stmt ast.Statement, expectedIdentifier string, expectedValue int) bool {
+	if stmt.TokenLiteral() != "let" {
+		t.Errorf("stmt.TokenLiteral() = %q, want 'let'", stmt.TokenLiteral())
+		return false
+	}
+
+	letStmt, ok := stmt.(*ast.LetStatement)
+	if !ok {
+		t.Errorf("stmt not *ast.LetStatement")
+		return false
+	}
+	if letStmt.Name.Value != expectedIdentifier {
+		t.Errorf("letStmt.Name.Value = %q, want %q", letStmt.Name.Value, expectedIdentifier)
+		return false
+	}
+	if letStmt.Name.TokenLiteral() != expectedIdentifier {
+		t.Errorf("letStmt.Name.TokenLiteral() = %q, want %q", letStmt.Name.TokenLiteral(), expectedIdentifier)
+		return false
+	}
+	return true
 }

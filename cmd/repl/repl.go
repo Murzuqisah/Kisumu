@@ -8,12 +8,30 @@ import (
 	"kisumu/pkg/parser"
 )
 
-const PROMPT = "kisumu> "
+const PROMPT = "kisumu $"
 
 // Start is a read-eval-print loop (REPL) for the Kisumu programming language.
 // It continuously reads input from the provided reader, tokenizes it,
 // and writes the token type and literal to the provided writer.
 func Start(in io.Reader, out io.Writer) {
+	// scanner := bufio.NewScanner(in)
+
+	// for {
+	// 	fmt.Printf(PROMPT)
+	// 	scanned := scanner.Scan()
+	// 	if !scanned {
+	// 		return
+	// 	}
+
+	// 	line := scanner.Text()
+	// 	lexer := parser.Tokenize(line)
+
+	// 	for tok := lexer.GetNextToken(); tok.Type != parser.EOF; tok = lexer.GetNextToken() {
+	// 		fmt.Printf("%v\n", tok.Type, tok.Literal)
+	// 	}
+
+	// }
+
 	scanner := bufio.NewScanner(in)
 	writer := bufio.NewWriter(out)
 
