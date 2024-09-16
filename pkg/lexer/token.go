@@ -1,4 +1,4 @@
-package parser
+package lexer
 
 import (
 	"fmt"
@@ -23,9 +23,19 @@ const (
 	EOF     TokenType = "EOF"     // End of file
 
 	// Identifiers and literals
-	INT        TokenType = "INT"        // 1323145567890
-	STRING     TokenType = "STRING"     // concatenate, slice, and get
-	IDENTIFIER TokenType = "IDENTIFIER" // variable name, function name, or struct name
+	KEYWORD     TokenType = "KEYWORD"     // break, continue, else, for, if, return, struct, var
+	FUNCTION    TokenType = "FUNCTION"    // function
+	RETURN_TYPE TokenType = "RETURN_TYPE" // int, string, etc.
+	STRUCT_TYPE TokenType = "STRUCT_TYPE" // struct { field1 type; field2 type; }
+	VAR         TokenType = "VAR"         // var     // const
+	TYPE        TokenType = "TYPE"        // int, string, etc.
+	BOOLEAN     TokenType = "BOOLEAN"     // true, false
+	FLOAT       TokenType = "FLOAT"       // 123.456
+	IMAGINARY   TokenType = "IMAGINARY"   // 123.456i
+	RUNE        TokenType = "RUNE"        // 'a'
+	INT         TokenType = "INT"         // 1323145567890
+	STRING      TokenType = "STRING"      // concatenate, slice, and get
+	IDENTIFIER  TokenType = "IDENTIFIER"  // variable name, function name, or struct name
 
 	// Operators and delimiters
 	OPEN_BRACKET      TokenType = "OPEN_BRACKET"      // [
@@ -52,6 +62,7 @@ const (
 	TRUE  TokenType = "TRUE"  // true
 	FALSE TokenType = "FALSE" // false
 
+	BANG       TokenType = "BANG"
 	DOT        TokenType = "DOT"        //.
 	DOT_DOT    TokenType = "DOT_DOT"    //..
 	SEMI_COLON TokenType = "SEMI_COLON" // ;
@@ -95,6 +106,41 @@ const (
 
 )
 
+var KEYWORDS = map[string]TokenType{
+	"let":       LET,
+	"const":     CONST,
+	"class":     CLASS,
+	"new":       NEW,
+	"import":    IMPORT,
+	"from":      FROM,
+	"fn":        FN,
+	"if":        IF,
+	"else":      ELSE,
+	"foreach":   FOREACH,
+	"while":     WHILE,
+	"for":       FOR,
+	"export":    EXPORT,
+	"typeof":    TYPEOF,
+	"in":        IN,
+	"return":    RETURN,
+	"break":     BREAK,
+	"continue":  CONTINUE,
+	"null":      NULL,
+	"true":      TRUE,
+	"false":     FALSE,
+	"boolean":   BOOLEAN,
+	"float":     FLOAT,
+	"imaginary": IMAGINARY,
+	"rune":      RUNE,
+	"int":       INT,
+	"string":    STRING,
+	"struct":    STRUCT_TYPE,
+	"var":       VAR,
+	"type":      TYPE,
+	"or":        OR,
+	"and":       AND,
+}
+
 func (token Token) isAmongDefined(expectedTokens ...TokenType) bool {
 	for _, expected := range expectedTokens {
 		if expected == token.Type {
@@ -102,6 +148,13 @@ func (token Token) isAmongDefined(expectedTokens ...TokenType) bool {
 		}
 	}
 	return false
+}
+
+func LookupIdentifier(keyword string) TokenType {
+	if keywordToken, ok := KEYWORDS[keyword]; ok {
+		return keywordToken
+	}
+	return IDENTIFIER
 }
 
 // HELPER METHODS FOR DEBUGGING TOKENS
@@ -130,6 +183,18 @@ func IsLetter(s string) bool {
 	for _, char := range s {
 		if char >= 'a' && char <= 'z' || char >= 'A' && char <= 'Z' {
 			return true
+		}
+	}
+	return false
+}
+
+func IsFloat(s string) bool {
+	for _, char := range s {
+		if char == '.' {
+			return true
+		}
+		if !IsDigit(string(char)) {
+			return false
 		}
 	}
 	return false
@@ -334,6 +399,7 @@ func (l *Lexer) GetNextToken() Token {
 	default:
 		if IsLetter(string(l.currentChar)) || l.currentChar == '_' {
 			ident := l.readIdentifier()
+			// tok = LookupKeyword(string(ident))
 			tok = newToken(IDENTIFIER, ident)
 		} else if IsDigit(string(l.currentChar)) {
 			tok = newToken(INT, l.readNumber())
