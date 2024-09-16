@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 
-	"kisumu/pkg/parser"
+	"kisumu/pkg/lexer"
 )
 
 const PROMPT = "kisumu $"
@@ -24,9 +24,9 @@ func Start(in io.Reader, out io.Writer) {
 	// 	}
 
 	// 	line := scanner.Text()
-	// 	lexer := parser.Tokenize(line)
+	// 	lexer := lexer.Tokenize(line)
 
-	// 	for tok := lexer.GetNextToken(); tok.Type != parser.EOF; tok = lexer.GetNextToken() {
+	// 	for tok := lexer.GetNextToken(); tok.Type != lexer.EOF; tok = lexer.GetNextToken() {
 	// 		fmt.Printf("%v\n", tok.Type, tok.Literal)
 	// 	}
 
@@ -49,14 +49,14 @@ func Start(in io.Reader, out io.Writer) {
 		}
 
 		line := scanner.Text()
-		lexer := parser.Tokenize(line)
+		Lexer := lexer.Tokenize(line)
 
 		for {
-			tok := lexer.GetNextToken()
-			if tok.Type == parser.EOF {
+			tok := Lexer.GetNextToken()
+			if tok.Type == lexer.EOF {
 				break
 			}
-			if tok.Type == parser.ILLEGAL {
+			if tok.Type == lexer.ILLEGAL {
 				fmt.Fprintf(writer, "Illegal token: %s\n", tok.Literal)
 			} else {
 				fmt.Fprintf(writer, "Token: %s (%s)\n", tok.Type, tok.Literal)
@@ -68,21 +68,21 @@ func Start(in io.Reader, out io.Writer) {
 
 type REPL struct {
 	prompt string
-	lexer  *parser.Lexer
+	lexer  *lexer.Lexer
 	// ksm    *lexer
-	// parser *parser
+	// lexer *lexer
 	// env    *Environment
 	// runner *runner
 	input  *bufio.Reader
 	output *bufio.Writer
 }
 
-func NewREPL(prompt string, lexer *parser.Lexer, input *bufio.Reader, output *bufio.Writer) *REPL {
+func NewREPL(prompt string, lexer *lexer.Lexer, input *bufio.Reader, output *bufio.Writer) *REPL {
 	return &REPL{
 		prompt: prompt,
 		lexer:  lexer,
 		// ksm:    ksm,
-		// parser: parser,
+		// lexer: lexer,
 		// env:    env,
 		// runner: runner,
 		input:  input,

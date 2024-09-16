@@ -1,4 +1,4 @@
-package parser
+package lexer
 
 import (
 	"fmt"
@@ -62,6 +62,7 @@ const (
 	TRUE  TokenType = "TRUE"  // true
 	FALSE TokenType = "FALSE" // false
 
+	BANG       TokenType = "BANG"
 	DOT        TokenType = "DOT"        //.
 	DOT_DOT    TokenType = "DOT_DOT"    //..
 	SEMI_COLON TokenType = "SEMI_COLON" // ;

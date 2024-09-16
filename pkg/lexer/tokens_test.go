@@ -1,35 +1,35 @@
-package parser_test
+package lexer_test
 
 import (
 	"testing"
 
-	"kisumu/pkg/parser"
+	"kisumu/pkg/lexer"
 )
 
 type Token struct {
-	expectedType    parser.TokenType
+	expectedType    lexer.TokenType
 	expectedLiteral string
 }
 
 var expectedTokens = []Token{
 	{
-		expectedType:    parser.OPEN_BRACKET,
+		expectedType:    lexer.OPEN_BRACKET,
 		expectedLiteral: "[",
 	},
 	{
-		expectedType:    parser.IDENTIFIER,
+		expectedType:    lexer.IDENTIFIER,
 		expectedLiteral: "hello",
 	},
 	{
-		expectedType:    parser.CLOSE_BRACKET,
+		expectedType:    lexer.CLOSE_BRACKET,
 		expectedLiteral: "]",
 	},
 }
 
 func TestTokenize(t *testing.T) {
-	source := `[hello ]` // l.skipWhitespace() is defined in parser/lexer.go, it skips whitespace before parsing tokens
+	source := `[hello ]` // l.skipWhitespace() is defined in lexer/lexer.go, it skips whitespace before parsing tokens
 
-	ksm := parser.Tokenize(source)
+	ksm := lexer.Tokenize(source)
 
 	for i, tt := range expectedTokens {
 		tokens := ksm.GetNextToken()
