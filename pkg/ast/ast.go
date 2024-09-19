@@ -36,15 +36,27 @@ type InfixExpression struct {
 	Right    Expression
 }
 
-func (ie *InfixExpression) expressionNode() {}
+func (oe *InfixExpression) expressionNode() {}
 
-func (ie *InfixExpression) TokenLiteral() string {
-	return ie.Right.TokenLiteral()
+func (oe *InfixExpression) TokenLiteral() string {
+	return oe.Right.TokenLiteral()
+}
+
+func (oe *InfixExpression) String() string {
+	var out bytes.Buffer
+
+	out.WriteString("{")
+	out.WriteString(oe.Left.String())
+	out.WriteString(" " + oe.Operator + " ")
+	out.WriteString(oe.Right.String())
+	out.WriteString(")")
+
+	return out.String()
 }
 
 type IntegerLiteral struct {
 	Token lexer.Token // the token.Token representing the integer value
-	Value int
+	Value int64
 }
 
 func (il *IntegerLiteral) expressionNode() {}
