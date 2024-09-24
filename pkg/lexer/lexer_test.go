@@ -22,7 +22,7 @@ func TestGetNextToken(t *testing.T) {
 		{lexer.SLASH, "/"},
 		{lexer.LESS, "<"},
 		{lexer.GREATER_EQUALS, ">="},
-		{lexer.NOT, "!"},
+		{lexer.BANG, "!"},
 		{lexer.AND, "&&"},
 		{lexer.OR, "||"},
 		{lexer.DOT_DOT, "..."},

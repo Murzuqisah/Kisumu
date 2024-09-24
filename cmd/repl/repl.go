@@ -14,23 +14,6 @@ const PROMPT = "kisumu $"
 // It continuously reads input from the provided reader, tokenizes it,
 // and writes the token type and literal to the provided writer.
 func Start(in io.Reader, out io.Writer) {
-	// scanner := bufio.NewScanner(in)
-
-	// for {
-	// 	fmt.Printf(PROMPT)
-	// 	scanned := scanner.Scan()
-	// 	if !scanned {
-	// 		return
-	// 	}
-
-	// 	line := scanner.Text()
-	// 	lexer := lexer.Tokenize(line)
-
-	// 	for tok := lexer.GetNextToken(); tok.Type != lexer.EOF; tok = lexer.GetNextToken() {
-	// 		fmt.Printf("%v\n", tok.Type, tok.Literal)
-	// 	}
-
-	// }
 
 	scanner := bufio.NewScanner(in)
 	writer := bufio.NewWriter(out)
@@ -60,6 +43,7 @@ func Start(in io.Reader, out io.Writer) {
 				fmt.Fprintf(writer, "Illegal token: %s\n", tok.Literal)
 			} else {
 				fmt.Fprintf(writer, "Token: %s (%s)\n", tok.Type, tok.Literal)
+				// "Token: %s (%s)\n", tok.Type, tok.Literal
 			}
 		}
 		writer.Flush() // Ensure output is written
