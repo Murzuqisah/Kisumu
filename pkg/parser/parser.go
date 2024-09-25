@@ -55,8 +55,8 @@ func NewParser(l *lexer.Lexer) *Parser {
 		l:      l,
 		errors: []string{},
 	}
-	p.nextToken()
-	p.nextToken()
+	// p.nextToken()
+	// p.nextToken()
 	p.registerPrefix(lexer.BANG, p.parsePrefixExpression)
 	p.registerPrefix(lexer.DASH, p.parsePrefixExpression)
 	p.prefixParseFn = make(map[lexer.TokenType]prefixParseFn)
