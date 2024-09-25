@@ -26,7 +26,7 @@ var testCases = []testCase{
 	{lexer.LET, "let"},
 	{lexer.IDENTIFIER, "add"},
 	{lexer.ASSIGNMENT, "="},
-	{lexer.FN, "function"},
+	{lexer.FN, "fn"},
 	{lexer.OPEN_PARENTHESES, "("},
 	{lexer.IDENTIFIER, "x"},
 	{lexer.COMMA, ","},

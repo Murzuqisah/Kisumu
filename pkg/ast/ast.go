@@ -6,11 +6,7 @@ import (
 	"kisumu/pkg/lexer"
 )
 
-type Node interface {
-	// Add methods for each node type
-	TokenLiteral() string
-	String() string
-}
+
 
 type PrefixExpression struct {
 	Token    lexer.Token
@@ -67,16 +63,6 @@ func (il *IntegerLiteral) TokenLiteral() string {
 
 func (il *IntegerLiteral) String() string {
 	return il.Token.Literal
-}
-
-type Statement interface {
-	Node
-	statementNode()
-}
-
-type Expression interface {
-	Node
-	expressionNode()
 }
 
 type ExpressionStatement struct {
