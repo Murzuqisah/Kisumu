@@ -7,7 +7,7 @@ import (
 )
 
 // let myVar = anotherVar;
-
+//  disclaimer !!the test file is yet to be completed thus the errors highlited are just place holders waiting fo the fuction to be full implemented
 func TestString(t *testing.T) {
 	program := &Program{
 		Statements: []Statement{
