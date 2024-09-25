@@ -10,23 +10,23 @@ import (
 func TestStart(t *testing.T) {
 	input := "let x = 5;\nlet y = 10;\nlet z = x + y;\n"
 	expectedOutput := []string{
-		"Token: LET (let)",
-		"Token: IDENT (x)",
-		"Token: ASSIGN (=)",
+		"kisumu $Token: LET (let)",
+		"Token: IDENTIFIER (x)",
+		"Token: ASSIGNMENT (=)",
 		"Token: INT (5)",
-		"Token: SEMICOLON (;)",
-		"Token: LET (let)",
-		"Token: IDENT (y)",
-		"Token: ASSIGN (=)",
+		"Token: SEMI_COLON (;)",
+		"kisumu $Token: LET (let)",
+		"Token: IDENTIFIER (y)",
+		"Token: ASSIGNMENT (=)",
 		"Token: INT (10)",
-		"Token: SEMICOLON (;)",
-		"Token: LET (let)",
-		"Token: IDENT (z)",
-		"Token: ASSIGN (=)",
-		"Token: IDENT (x)",
+		"Token: SEMI_COLON (;)",
+		"kisumu $Token: LET (let)",
+		"Token: IDENTIFIER (z)",
+		"Token: ASSIGNMENT (=)",
+		"Token: IDENTIFIER (x)",
 		"Token: PLUS (+)",
-		"Token: IDENT (y)",
-		"Token: SEMICOLON (;)",
+		"Token: IDENTIFIER (y)",
+		"Token: SEMI_COLON (;)",
 	}
 
 	in := strings.NewReader(input)
@@ -34,7 +34,7 @@ func TestStart(t *testing.T) {
 	Start(in, &out)
 
 	outputLines := strings.Split(out.String(), "\n")
-	
+
 	for i, expected := range expectedOutput {
 		if i < len(outputLines) && outputLines[i] != expected {
 			t.Errorf("Expected output %q, but got %q", expected, outputLines[i])
