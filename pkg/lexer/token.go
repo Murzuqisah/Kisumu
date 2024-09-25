@@ -245,7 +245,7 @@ func (l *Lexer) peekChar() byte {
 }
 
 func (l *Lexer) skipWhitespace() {
-	for l.currentChar == '\\' || l.currentChar == '\t' || l.currentChar == '\n' || l.currentChar == '\r' {
+	for l.currentChar == ' ' || l.currentChar == '\t' || l.currentChar == '\n' || l.currentChar == '\r' {
 		l.getChar()
 	}
 }
@@ -296,8 +296,7 @@ func (l *Lexer) GetNextToken() Token {
 		if l.peekChar() == '=' {
 			ch := l.currentChar
 			l.getChar()
-			tok = Token{Type: EQUALS, Literal: string(ch) + string(l.currentChar)}
-			// tok = newToken(EQUALS, "==")
+			tok = newToken(EQUALS, string(ch)+string(l.currentChar))
 		} else {
 			tok = newToken(ASSIGNMENT, string(l.currentChar))
 		}
@@ -325,7 +324,7 @@ func (l *Lexer) GetNextToken() Token {
 		if l.peekChar() == '=' {
 			ch := l.currentChar
 			l.getChar()
-			tok = Token{Type: NOT_EQUALS, Literal: string(ch) + string(l.currentChar)}
+			tok = newToken(NOT_EQUALS, string(ch)+string(l.currentChar))
 		} else {
 			tok = newToken(BANG, string(l.currentChar))
 		}
@@ -392,18 +391,17 @@ func (l *Lexer) GetNextToken() Token {
 	default:
 		if IsLetter(l.currentChar) || l.currentChar == '_' {
 			ident := l.readIdentifier()
-			// tok = LookupKeyword(string(ident))
-			tok = newToken(IDENTIFIER, ident)
+			tok = NewToken(LookupIdentifier(ident), ident) // Use LookupIdentifier here
+			return tok                                     // Return here to prevent getting the next character too early
 		} else if IsDigit(l.currentChar) {
 			tok = newToken(INT, l.readNumber())
-		} else if l.currentChar == ' ' || l.currentChar == '\t' || l.currentChar == '\n' || l.currentChar == '\r' {
-			tok = newToken(WHITESPACE, string(l.currentChar))
+			return tok // Return here to prevent getting the next character too early
 		} else {
 			tok = newToken(ILLEGAL, string(l.currentChar))
 		}
 	}
 
-	l.getChar()
+	l.getChar() // Move to the next character only if we haven't already returned a token
 	return tok
 }
 

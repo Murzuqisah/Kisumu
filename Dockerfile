@@ -1,15 +1,15 @@
-#build stage
+# Build stage
 FROM golang:alpine AS builder
-RUN apk add --no-cache git
-WORKDIR /go/src/app
+WORKDIR /app
+COPY go.mod go.sum ./
+RUN go mod download
 COPY . .
-RUN go get -d -v ./...
-RUN go build -o /go/bin/app -v ./...
+RUN go build -o /app/kisumu cmd/kisumu/main.go
 
-#final stage
+# Final stage
 FROM alpine:latest
 RUN apk --no-cache add ca-certificates
-COPY --from=builder /go/bin/app /app
-ENTRYPOINT /app
+COPY --from=builder /app/kisumu /app/kisumu
 LABEL Name=kisumu Version=0.0.1
 EXPOSE 3000
+ENTRYPOINT ["/app/kisumu"]
