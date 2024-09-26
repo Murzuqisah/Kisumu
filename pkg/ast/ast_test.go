@@ -13,11 +13,11 @@ func TestString(t *testing.T) {
 			&ast.LetStatement{
 				Token: lexer.Token{Type: lexer.LET, Literal: "let"},
 				Name: &ast.Identifier{
-					Token: lexer.Token{Type: lexer.IDENTIFIER, Literal: "myVar"},
+					Token: lexer.Token{Type: lexer.STRING, Literal: "myVar"},
 					Value: "myVar",
 				},
 				Value: &ast.Identifier{
-					Token: lexer.Token{Type: lexer.IDENTIFIER, Literal: "anotherVar"},
+					Token: lexer.Token{Type: lexer.STRING, Literal: "anotherVar"},
 					Value: "anotherVar",
 				},
 			},

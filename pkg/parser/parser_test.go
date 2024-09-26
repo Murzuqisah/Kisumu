@@ -1,4 +1,4 @@
-package parser
+package parser_test
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 
 	"kisumu/pkg/ast"
 	"kisumu/pkg/lexer"
+	"kisumu/pkg/parser"
 )
 
 func TestLetStatements(t *testing.T) {
@@ -16,7 +17,7 @@ func TestLetStatements(t *testing.T) {
     `
 
 	l := lexer.Tokenize(input)
-	p := NewParser(l)
+	p := parser.NewParser(l)
 
 	program := p.ParseProgram()
 	CheckParserErrors(t, p)
@@ -25,7 +26,7 @@ func TestLetStatements(t *testing.T) {
 	}
 
 	if len(program.Statements) != 3 {
-		t.Fatalf("Expected 3 statements, got %d", len(program.Statements))
+		t.Fatalf("program.Statements does not contain %d statements. Got %d\n", 3, len(program.Statements))
 	}
 
 	tests := []struct {
@@ -38,7 +39,6 @@ func TestLetStatements(t *testing.T) {
 
 	for i, tc := range tests {
 		stmt := program.Statements[i]
-		// fmt.Printf("test : Expected types = %s, %s, %s, Found Statements = %s, %s, %s\n", tc.expectedIdentifier, stmt, program.Statements)
 		if !testLetStatement(t, stmt, tc.expectedIdentifier) {
 			return
 		}
@@ -68,7 +68,7 @@ func testLetStatement(t *testing.T, stmt ast.Statement, Name string) bool {
 	return true
 }
 
-func CheckParserErrors(t *testing.T, p *Parser) {
+func CheckParserErrors(t *testing.T, p *parser.Parser) {
 	errors := p.Errors()
 
 	if len(errors) == 0 {
@@ -89,7 +89,7 @@ func TestReturnStatement(t *testing.T) {
 	return 993322;
 	`
 	l := lexer.Tokenize(input)
-	p := NewParser(l)
+	p := parser.NewParser(l)
 
 	program := p.ParseProgram()
 	CheckParserErrors(t, p)
@@ -114,7 +114,7 @@ func TestIdentifiesExpression(t *testing.T) {
 	input := "foobar;"
 
 	l := lexer.Tokenize(input)
-	p := NewParser(l)
+	p := parser.NewParser(l)
 	program := p.ParseProgram()
 	CheckParserErrors(t, p)
 
@@ -143,7 +143,7 @@ func TestIntegerLiteralExpression(t *testing.T) {
 	input := "5;"
 
 	l := lexer.Tokenize(input)
-	p := NewParser(l)
+	p := parser.NewParser(l)
 	program := p.ParseProgram()
 	CheckParserErrors(t, p)
 	if len(program.Statements) != 1 {
@@ -180,7 +180,7 @@ func TestParsingPrefixExpressions(t *testing.T) {
 
 	for _, tt := range prefixTests {
 		l := lexer.Tokenize(tt.input)
-		p := NewParser(l)
+		p := parser.NewParser(l)
 		program := p.ParseProgram()
 		CheckParserErrors(t, p)
 
@@ -244,7 +244,7 @@ func TestParsingInfixExpressions(t *testing.T) {
 
 	for _, tt := range infixTest {
 		l := lexer.Tokenize(tt.input)
-		p := NewParser(l)
+		p := parser.NewParser(l)
 		program := p.ParseProgram()
 		CheckParserErrors(t, p)
 
@@ -267,7 +267,7 @@ func TestParsingInfixExpressions(t *testing.T) {
 		}
 
 		if exp.Operator != tt.operator {
-			t.Fatalf("exp.Operator is not '%s'. Got %s", tt.operator, exp.Operator)
+			t.Fatalf("exp.Operator is not '%d'. Got %d", tt.operator, exp.Operator)
 		}
 
 		if !testIntegerLiteral(t, exp.Right, tt.rightValue) {
@@ -337,7 +337,7 @@ func TestOperatorPrecedenceParsing(t *testing.T) {
 
 	for _, tt := range tests {
 		l := lexer.Tokenize(tt.input)
-		p := NewParser(l)
+		p := parser.NewParser(l)
 		program := p.ParseProgram()
 		CheckParserErrors(t, p)
 
