@@ -55,8 +55,8 @@ func NewParser(l *lexer.Lexer) *Parser {
 		l:      l,
 		errors: []string{},
 	}
-	// p.nextToken()
-	// p.nextToken()
+	p.nextToken()
+	p.nextToken()
 	p.registerPrefix(lexer.BANG, p.parsePrefixExpression)
 	p.registerPrefix(lexer.DASH, p.parsePrefixExpression)
 	p.prefixParseFn = make(map[lexer.TokenType]prefixParseFn)
@@ -99,9 +99,7 @@ func (p *Parser) ParseProgram() *ast.Program {
 
 	for p.currentToken.Type != lexer.EOF {
 		stmt := p.parseStatement()
-		if stmt != nil {
-			program.Statements = append(program.Statements, stmt)
-		}
+		program.Statements = append(program.Statements, stmt)
 		p.nextToken()
 	}
 
