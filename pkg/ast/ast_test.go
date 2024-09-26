@@ -27,3 +27,13 @@ func TestString(t *testing.T) {
 		t.Errorf("program.String() wrong. got=%q", program.String())
 	}
 }
+		program := p.ParseProgram()
+		CheckParserErrors(t, p)
+
+		actual := program.String()
+
+		if actual != tt.expected {
+			t.Errorf("Expected %q, got %q", tt.expected, actual)
+		}
+	}
+}
