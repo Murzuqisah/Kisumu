@@ -3,22 +3,21 @@ package ast_test
 import (
 	"testing"
 
+	"kisumu/pkg/ast"
 	"kisumu/pkg/lexer"
 )
 
-// let myVar = anotherVar;
-//  disclaimer !!the test file is yet to be completed thus the errors highlited are just place holders waiting fo the fuction to be full implemented
 func TestString(t *testing.T) {
-	program := &Program{
-		Statements: []Statement{
-			&LetStatement{
+	program := &ast.Program{
+		Statements: []ast.Statement{
+			&ast.LetStatement{
 				Token: lexer.Token{Type: lexer.LET, Literal: "let"},
-				Name: &Identifier{
-					Token: lexer.Token{Type: lexer.IDENTIFIER, Literal: "myVar"},
+				Name: &ast.Identifier{
+					Token: lexer.Token{Type: lexer.STRING, Literal: "myVar"},
 					Value: "myVar",
-					51},
-				Value: &Identifier{
-					Token: lexer.Token{Type: lexer.IDENTIFIER, Literal: "anotherVar"},
+				},
+				Value: &ast.Identifier{
+					Token: lexer.Token{Type: lexer.STRING, Literal: "anotherVar"},
 					Value: "anotherVar",
 				},
 			},
@@ -26,5 +25,15 @@ func TestString(t *testing.T) {
 	}
 	if program.String() != "let myVar = anotherVar;" {
 		t.Errorf("program.String() wrong. got=%q", program.String())
+	}
+}
+		program := p.ParseProgram()
+		CheckParserErrors(t, p)
+
+		actual := program.String()
+
+		if actual != tt.expected {
+			t.Errorf("Expected %q, got %q", tt.expected, actual)
+		}
 	}
 }

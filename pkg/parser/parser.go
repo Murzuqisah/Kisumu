@@ -99,9 +99,7 @@ func (p *Parser) ParseProgram() *ast.Program {
 
 	for p.currentToken.Type != lexer.EOF {
 		stmt := p.parseStatement()
-		if stmt != nil {
-			program.Statements = append(program.Statements, stmt)
-		}
+		program.Statements = append(program.Statements, stmt)
 		p.nextToken()
 	}
 

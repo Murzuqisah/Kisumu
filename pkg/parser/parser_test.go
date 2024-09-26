@@ -13,7 +13,7 @@ func TestLetStatements(t *testing.T) {
 	input := `
     let x = 5;
     let y = 10;
-    let foobar = 84444; //8 * 2 + y
+    let foobar = 8 * 2 + y;
     `
 
 	l := lexer.Tokenize(input)
@@ -26,7 +26,7 @@ func TestLetStatements(t *testing.T) {
 	}
 
 	if len(program.Statements) != 3 {
-		t.Fatalf("Expected 3 statements, got %v", len(program.Statements))
+		t.Fatalf("program.Statements does not contain %d statements. Got %d\n", 3, len(program.Statements))
 	}
 
 	tests := []struct {
@@ -39,7 +39,6 @@ func TestLetStatements(t *testing.T) {
 
 	for i, tc := range tests {
 		stmt := program.Statements[i]
-		// fmt.Printf("test : Expected types = %s, %s, %s, Found Statements = %s, %s, %s\n", tc.expectedIdentifier, stmt, program.Statements)
 		if !testLetStatement(t, stmt, tc.expectedIdentifier) {
 			return
 		}
@@ -268,7 +267,7 @@ func TestParsingInfixExpressions(t *testing.T) {
 		}
 
 		if exp.Operator != tt.operator {
-			t.Fatalf("exp.Operator is not '%s'. Got %s", tt.operator, exp.Operator)
+			t.Fatalf("exp.Operator is not '%d'. Got %d", tt.operator, exp.Operator)
 		}
 
 		if !testIntegerLiteral(t, exp.Right, tt.rightValue) {
