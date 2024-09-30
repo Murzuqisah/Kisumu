@@ -5,7 +5,10 @@ import (
 	"fmt"
 	"io"
 
+	"kisumu/pkg/interpreter"
 	"kisumu/pkg/lexer"
+	"kisumu/pkg/object"
+	"kisumu/pkg/parser"
 )
 
 const PROMPT = "kisumu $"
@@ -16,37 +19,36 @@ const PROMPT = "kisumu $"
 func Start(in io.Reader, out io.Writer) {
 
 	scanner := bufio.NewScanner(in)
-	writer := bufio.NewWriter(out)
+	env := object.NewEnvironment()
 
 	for {
-		fmt.Fprint(writer, PROMPT)
-		writer.Flush() // Ensure prompt is printed before reading input
+		fmt.Printf(PROMPT)
 
 		if !scanner.Scan() {
-			if err := scanner.Err(); err != nil {
-				fmt.Fprintf(writer, "Error reading input: %v\n", err)
-				writer.Flush()
-				continue
-			}
-			break // Exit loop on EOF or error
+			return // Exit loop on EOF or error
 		}
 
 		line := scanner.Text()
 		Lexer := lexer.Tokenize(line)
+		parser := parser.NewParser(Lexer)
 
-		for {
-			tok := Lexer.GetNextToken()
-			if tok.Type == lexer.EOF {
-				break
-			}
-			if tok.Type == lexer.ILLEGAL {
-				fmt.Fprintf(writer, "Illegal token: %s\n", tok.Literal)
-			} else {
-				fmt.Fprintf(writer, "Token: %s (%s)\n", tok.Type, tok.Literal)
-				// "Token: %s (%s)\n", tok.Type, tok.Literal
-			}
+		program := parser.ParseProgram()
+		if len(parser.Errors()) != 0 {
+			printParserErrors(out, parser.Errors())
+			continue
 		}
-		writer.Flush() // Ensure output is written
+
+		evaluated := interpreter.Eval(program, env)
+		if evaluated != nil {
+			io.WriteString(out, program.String())
+			io.WriteString(out, "\n")
+		}
+	}
+}
+
+func printParserErrors(out io.Writer, errors []string) {
+	for _, msg := range errors {
+		io.WriteString(out, "\t"+msg+"\n")
 	}
 }
 

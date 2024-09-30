@@ -2,6 +2,8 @@ package parser
 
 import (
 	"fmt"
+	"log"
+	"runtime"
 	"strconv"
 
 	"kisumu/pkg/ast"
@@ -20,14 +22,15 @@ const (
 )
 
 var precedence = map[lexer.TokenType]int{
-	lexer.EQUALS:     EQUALS,
-	lexer.NOT_EQUALS: EQUALS,
-	lexer.LESS:       LESSGREATER,
-	lexer.GREATER:    LESSGREATER,
-	lexer.PLUS:       SUM,
-	lexer.DASH:       SUM,
-	lexer.SLASH:      PRODUCT,
-	lexer.ASTERISK:   PRODUCT,
+	lexer.EQUALS:           EQUALS,
+	lexer.NOT_EQUALS:       EQUALS,
+	lexer.LESS:             LESSGREATER,
+	lexer.GREATER:          LESSGREATER,
+	lexer.PLUS:             SUM,
+	lexer.DASH:             SUM,
+	lexer.SLASH:            PRODUCT,
+	lexer.ASTERISK:         PRODUCT,
+	lexer.OPEN_PARENTHESES: CALL,
 }
 
 type Parser struct {
@@ -57,11 +60,19 @@ func NewParser(l *lexer.Lexer) *Parser {
 	}
 	p.nextToken()
 	p.nextToken()
-	p.registerPrefix(lexer.BANG, p.parsePrefixExpression)
-	p.registerPrefix(lexer.DASH, p.parsePrefixExpression)
+	//PrefixFn()
 	p.prefixParseFn = make(map[lexer.TokenType]prefixParseFn)
+	p.registerPrefix(lexer.DASH, p.parsePrefixExpression)
+	p.registerPrefix(lexer.BANG, p.parsePrefixExpression)
 	p.registerPrefix(lexer.IDENTIFIER, p.parseIdentifier)
 	p.registerPrefix(lexer.INT, p.parseIntegerLiteral)
+	p.registerPrefix(lexer.TRUE, p.parseBoolean)
+	p.registerPrefix(lexer.FALSE, p.parseBoolean)
+	p.registerPrefix(lexer.OPEN_PARENTHESES, p.parseGroupedExpression)
+	p.registerPrefix(lexer.IF, p.parseIfExpression)
+	p.registerPrefix(lexer.FN, p.parseFunctionLiteral)
+
+	// InfixFn()
 	p.infixParseFn = make(map[lexer.TokenType]infixParseFn)
 	p.registerInfix(lexer.PLUS, p.parseInfixExpression)
 	p.registerInfix(lexer.DASH, p.parseInfixExpression)
@@ -71,8 +82,149 @@ func NewParser(l *lexer.Lexer) *Parser {
 	p.registerInfix(lexer.NOT_EQUALS, p.parseInfixExpression)
 	p.registerInfix(lexer.LESS, p.parseInfixExpression)
 	p.registerInfix(lexer.GREATER, p.parseInfixExpression)
+	p.registerInfix(lexer.OPEN_PARENTHESES, p.parseCallExpression)
 
 	return p
+}
+
+func (p *Parser) parseCallExpression(function ast.Expression) ast.Expression {
+	exp := &ast.CallExpression{Token: p.currentToken, Function: function}
+	exp.Argument = p.parseCallArguments()
+	return exp
+}
+func (p *Parser) parseCallArguments() []ast.Expression {
+	args := []ast.Expression{}
+	if p.peekTokenIs(lexer.CLOSE_PARENTHESES) {
+		p.nextToken()
+		return args
+	}
+	p.nextToken()
+	args = append(args, p.parseExpression(LOWEST))
+	for p.peekTokenIs(lexer.COMMA) {
+		p.nextToken()
+		p.nextToken()
+		args = append(args, p.parseExpression(LOWEST))
+	}
+	if !p.expectPeek(lexer.CLOSE_PARENTHESES) {
+		return nil
+	}
+	return args
+}
+
+func (p *Parser) parseFunctionLiteral() ast.Expression {
+	lit := &ast.FunctionLiteral{
+		Token: p.currentToken,
+	}
+
+	if !p.expectPeek(lexer.OPEN_PARENTHESES) {
+		return nil
+	}
+
+	lit.Parameters = p.parseFunctionParameters()
+
+	if !p.expectPeek(lexer.OPEN_CURLY) {
+		return nil
+	}
+
+	lit.Body = p.parseBlockStatement()
+
+	return lit
+}
+
+func (p *Parser) parseFunctionParameters() []*ast.Identifier {
+	identifiers := []*ast.Identifier{}
+
+	if p.peekTokenIs(lexer.CLOSE_PARENTHESES) {
+		p.nextToken()
+		return identifiers
+	}
+
+	p.nextToken()
+
+	ident := &ast.Identifier{
+		Token: p.currentToken,
+		Value: p.currentToken.Literal,
+	}
+
+	identifiers = append(identifiers, ident)
+
+	for p.peekTokenIs(lexer.COMMA) {
+		p.nextToken()
+		p.nextToken()
+		ident := &ast.Identifier{
+			Token: p.currentToken,
+			Value: p.currentToken.Literal,
+		}
+		identifiers = append(identifiers, ident)
+	}
+
+	if !p.expectPeek(lexer.CLOSE_PARENTHESES) {
+		return nil
+	}
+
+	return identifiers
+}
+
+func (p *Parser) parseIfExpression() ast.Expression {
+	expression := &ast.IfExpression{
+		Token: p.currentToken,
+	}
+
+	if !p.expectPeek(lexer.OPEN_PARENTHESES) {
+		return nil
+	}
+
+	p.nextToken()
+	expression.Condition = p.parseExpression(LOWEST)
+
+	if !p.expectPeek(lexer.CLOSE_PARENTHESES) {
+		return nil
+	}
+
+	if !p.expectPeek(lexer.OPEN_CURLY) {
+		return nil
+	}
+	expression.Consequence = p.parseBlockStatement()
+
+	if p.peekTokenIs(lexer.ELSE) {
+		p.nextToken()
+
+		if !p.expectPeek(lexer.OPEN_CURLY) {
+			return nil
+		}
+
+		expression.Alternative = p.parseBlockStatement()
+	}
+	return expression
+}
+
+func (p *Parser) parseBlockStatement() *ast.BlockStatement {
+	block := &ast.BlockStatement{
+		Token: p.currentToken,
+	}
+	block.Statements = []ast.Statement{}
+
+	p.nextToken()
+
+	for !p.currentTokenIs(lexer.CLOSE_CURLY) && !p.currentTokenIs(lexer.EOF) {
+		stmt := p.parseStatement()
+		if stmt != nil {
+			block.Statements = append(block.Statements, stmt)
+		}
+		p.nextToken()
+	}
+	return block
+}
+
+func (p *Parser) parseGroupedExpression() ast.Expression {
+	p.nextToken()
+
+	exp := p.parseExpression(LOWEST)
+
+	if !p.expectPeek(lexer.CLOSE_PARENTHESES) {
+		return nil
+	}
+	return exp
 }
 
 func (p *Parser) parseIdentifier() ast.Expression {
@@ -130,9 +282,10 @@ func (p *Parser) parseLetStatement() *ast.LetStatement {
 	}
 
 	p.nextToken()
-	stmt.Value = p.parseExpression(0)
 
-	for !p.currentTokenIs(lexer.SEMI_COLON) {
+	stmt.Value = p.parseExpression(LOWEST)
+
+	if p.peekTokenIs(lexer.SEMI_COLON) {
 		p.nextToken()
 	}
 
@@ -158,12 +311,18 @@ func (p *Parser) expectPeek(t lexer.TokenType) bool {
 }
 
 func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
-	stmt := &ast.ReturnStatement{Token: p.currentToken}
+	stmt := &ast.ReturnStatement{
+		Token: p.currentToken,
+	}
+
 	p.nextToken()
 
-	for !p.currentTokenIs(lexer.SEMI_COLON) {
+	stmt.ReturnValue = p.parseExpression(LOWEST)
+
+	if p.peekTokenIs(lexer.SEMI_COLON) {
 		p.nextToken()
 	}
+
 	return stmt
 }
 
@@ -176,6 +335,8 @@ func (p *Parser) registerInfix(tokenType lexer.TokenType, fn infixParseFn) {
 }
 
 func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
+	defer untrace(trace("parseExpressionStatement"))
+
 	stmt := &ast.ExpressionStatement{Token: p.currentToken}
 
 	stmt.Expression = p.parseExpression(LOWEST)
@@ -188,16 +349,21 @@ func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
 }
 
 func (p *Parser) parseExpression(precedence int) ast.Expression {
+	defer untrace(trace("parseExpression"))
+
 	prefix := p.prefixParseFn[p.currentToken.Type]
 	if prefix == nil {
+		p.noPrefixParseFnError(p.currentToken.Type)
 		return nil
 	}
 	leftExp := prefix()
+
 	for !p.peekTokenIs(lexer.SEMI_COLON) && precedence < p.peekPrecedence() {
 		infix := p.infixParseFn[p.peekToken.Type]
 		if infix == nil {
 			return leftExp
 		}
+
 		p.nextToken()
 
 		leftExp = infix(leftExp)
@@ -221,6 +387,8 @@ func (p *Parser) currentPrecedence() int {
 }
 
 func (p *Parser) parseIntegerLiteral() ast.Expression {
+	defer untrace(trace("parseIntegerLiteral"))
+
 	lit := &ast.IntegerLiteral{Token: p.currentToken}
 	value, err := strconv.ParseInt(p.currentToken.Literal, 0, 64)
 	if err != nil {
@@ -238,6 +406,8 @@ func (p *Parser) noPrefixParseFnError(t lexer.TokenType) {
 }
 
 func (p *Parser) parsePrefixExpression() ast.Expression {
+	defer untrace(trace("parsePrefixExpression"))
+
 	expression := &ast.PrefixExpression{
 		Token:    p.currentToken,
 		Operator: p.currentToken.Literal,
@@ -249,6 +419,8 @@ func (p *Parser) parsePrefixExpression() ast.Expression {
 }
 
 func (p *Parser) parseInfixExpression(left ast.Expression) ast.Expression {
+	defer untrace(trace("parseInfixExpression"))
+
 	expression := &ast.InfixExpression{
 		Token:    p.currentToken.Type,
 		Operator: p.currentToken.Literal,
@@ -260,4 +432,27 @@ func (p *Parser) parseInfixExpression(left ast.Expression) ast.Expression {
 	expression.Right = p.parseExpression(precedence)
 
 	return expression
+}
+
+func (p *Parser) parseBoolean() ast.Expression {
+	return &ast.Boolean{
+		Token: p.currentToken,
+		Value: p.currentTokenIs(lexer.TRUE),
+	}
+}
+
+// trace logs the entry into a function
+func trace(funcName string) func() {
+	_, file, line, _ := runtime.Caller(1) // Get caller info
+	log.Printf("Entering %s at %s:%d", funcName, file, line)
+	return func() {
+		log.Printf("Exiting %s", funcName)
+	}
+}
+
+// untrace executes the function returned by trace
+func untrace(exit func()) {
+	if exit != nil {
+		exit() // Call the exit function to log exit
+	}
 }

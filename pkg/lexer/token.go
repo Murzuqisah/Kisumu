@@ -386,6 +386,9 @@ func (l *Lexer) GetNextToken() Token {
 		tok = newToken(QUESTION, string(l.currentChar))
 	case ',':
 		tok = newToken(COMMA, string(l.currentChar))
+
+	// case '"':
+		// tok = newToken(STRING, (l.readString))
 	case 0:
 		tok = newToken(EOF, "")
 	default:
@@ -410,4 +413,15 @@ func newToken(tokenType TokenType, currentChar string) Token {
 		Type:    tokenType,
 		Literal: currentChar,
 	}
+}
+
+func (l *Lexer) readString() string {
+	position := l.position + 1
+	for {
+		l.getChar()
+		if l.currentChar == '"' || l.currentChar == 0 {
+			break
+		}
+	}
+	return l.input[position:l.position]
 }
