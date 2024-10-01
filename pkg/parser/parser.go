@@ -19,6 +19,7 @@ const (
 	PRODUCT     // *
 	PREFIX      // -X or !X
 	CALL        // myFunction(X)
+	INDEX       //array[index]
 )
 
 var precedence = map[lexer.TokenType]int{
@@ -31,6 +32,7 @@ var precedence = map[lexer.TokenType]int{
 	lexer.SLASH:            PRODUCT,
 	lexer.ASTERISK:         PRODUCT,
 	lexer.OPEN_PARENTHESES: CALL,
+	lexer.OPEN_BRACKET: INDEX,
 }
 
 type Parser struct {
@@ -71,6 +73,8 @@ func NewParser(l *lexer.Lexer) *Parser {
 	p.registerPrefix(lexer.OPEN_PARENTHESES, p.parseGroupedExpression)
 	p.registerPrefix(lexer.IF, p.parseIfExpression)
 	p.registerPrefix(lexer.FN, p.parseFunctionLiteral)
+	p.registerPrefix(lexer.STRING, p.parseStringLiteral)
+	p.registerPrefix(lexer.OPEN_BRACKET, p.parseArrayLiteral)
 
 	// InfixFn()
 	p.infixParseFn = make(map[lexer.TokenType]infixParseFn)
@@ -83,13 +87,56 @@ func NewParser(l *lexer.Lexer) *Parser {
 	p.registerInfix(lexer.LESS, p.parseInfixExpression)
 	p.registerInfix(lexer.GREATER, p.parseInfixExpression)
 	p.registerInfix(lexer.OPEN_PARENTHESES, p.parseCallExpression)
+	p.registerInfix(lexer.OPEN_BRACKET, p.parseIndexExpression)
 
 	return p
 }
 
+func (p *Parser) parseArrayLiteral() ast.Expression {
+	array := &ast.ArrayLiteral{
+		Token: p.currentToken,
+	}
+	array.Elements = p.parseExpressionList(lexer.CLOSE_BRACKET)
+	return array
+}
+
+func (p *Parser) parseExpressionList(end lexer.TokenType) []ast.Expression {
+	list := []ast.Expression{}
+
+	if p.peekTokenIs(end) {
+		p.nextToken()
+		return list
+	}
+
+	p.nextToken()
+	list = append(list, p.parseExpression(LOWEST))
+
+	for p.peekTokenIs(lexer.COMMA) {
+		p.nextToken()
+		p.nextToken()
+		list = append(list, p.parseExpression(LOWEST))
+	}
+
+	if !p.expectPeek(end) {
+		return nil
+	}
+
+	return list
+}
+
+func (p *Parser) parseStringLiteral() ast.Expression {
+	return &ast.StringLiteral{
+		Token: p.currentToken,
+		Value: p.currentToken.Literal,
+	}
+}
+
 func (p *Parser) parseCallExpression(function ast.Expression) ast.Expression {
-	exp := &ast.CallExpression{Token: p.currentToken, Function: function}
-	exp.Argument = p.parseCallArguments()
+	exp := &ast.CallExpression{
+		Token:    p.currentToken,
+		Function: function,
+	}
+	exp.Argument = p.parseExpressionList(lexer.CLOSE_PARENTHESES)
 	return exp
 }
 func (p *Parser) parseCallArguments() []ast.Expression {
@@ -109,6 +156,21 @@ func (p *Parser) parseCallArguments() []ast.Expression {
 		return nil
 	}
 	return args
+}
+
+func (p *Parser) parseIndexExpression(left ast.Expression) ast.Expression {
+	expr := &ast.IndexExpression{
+		Token: p.currentToken,
+		Left:  left,
+	}
+
+	p.nextToken()
+	expr.Index = p.parseExpression(LOWEST)
+
+	if !p.expectPeek(lexer.CLOSE_BRACKET) {
+		return nil
+	}
+	return expr
 }
 
 func (p *Parser) parseFunctionLiteral() ast.Expression {

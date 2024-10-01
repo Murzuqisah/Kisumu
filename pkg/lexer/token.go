@@ -387,8 +387,8 @@ func (l *Lexer) GetNextToken() Token {
 	case ',':
 		tok = newToken(COMMA, string(l.currentChar))
 
-	// case '"':
-		// tok = newToken(STRING, (l.readString))
+	case '"':
+		tok = newToken(STRING, (l.readString()))
 	case 0:
 		tok = newToken(EOF, "")
 	default:

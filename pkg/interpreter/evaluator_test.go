@@ -214,6 +214,10 @@ return 1;
 			"foobar",
 			"identifier not found: foobar",
 		},
+		{
+			`"Hello" - "World"`,
+			"unknown operator: STRING - STRING",
+		},
 	}
 	for _, tt := range tests {
 		evaluated := testEval(tt.input)
@@ -296,4 +300,142 @@ let addTwo = newAdder(2);
 addTwo(2);`
 
 	testIntegerObject(t, testEval(input), 4)
+}
+
+func TestStringLiteral(t *testing.T) {
+	input := `"hello world!"`
+
+	evaluated := testEval(input)
+	str, ok := evaluated.(*object.String)
+	if !ok {
+		t.Fatalf("object is not a String. Got %T (%+v)", evaluated, evaluated)
+	}
+
+	if str.Value != "Hello World!" {
+		t.Errorf("String has a wrong value. Got %q", str.Value)
+	}
+}
+
+func TestStringConcatenation(t *testing.T) {
+	input := `"Hello" + " " + "World!"`
+
+	evaluated := testEval(input)
+	str, ok := evaluated.(*object.String)
+	if !ok {
+		t.Fatalf("object is not a String. Got %T (%+v)", evaluated, evaluated)
+	}
+
+	if str.Value != "Hello World!" {
+		t.Errorf("String has a wrong value. Got %q", str.Value)
+	}
+}
+
+func TestBuiltinFunctions(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected interface{}
+	}{
+		{
+			`len("")`,
+			0,
+		},
+		{
+			`len("four")`,
+			4,
+		},
+		{
+			`len("hello world")`,
+			11,
+		},
+		{
+			`len("1")`,
+			"argument to `len` not supported, got INTEGER",
+		},
+		{
+			`len("one", "two)`,
+			"wrong number of arguments. Got 2, want 1",
+		},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+
+		switch expected := tt.expected.(type) {
+		case int:
+			testIntegerObject(t, evaluated, int64(expected))
+		case string:
+			errObj, ok := evaluated.(*object.Error)
+			if !ok {
+				t.Errorf("Object is not Error. Got %T (%+v)", evaluated, evaluated)
+				continue
+			}
+			if errObj.Message != expected {
+				t.Errorf("Wrong error message. Expected %q, got %q", expected, errObj.Message)
+			}
+		}
+	}
+}
+
+func TestArrayLiterals(t *testing.T) {
+	input := "[1, 2 * 2, 3 + 3]"
+
+	evaluated := testEval(input)
+	result, ok := evaluated.(*object.Array)
+	if !ok {
+		t.Fatalf("Object is not an array. Got %T (%+v)", evaluated, evaluated)
+	}
+
+	if len(result.Elements) != 3 {
+		t.Fatalf("Array has wrong length(Wrong number of elements). Got %d", len(result.Elements))
+	}
+	testIntegerObject(t, result.Elements[0], 1)
+	testIntegerObject(t, result.Elements[1], 4)
+	testIntegerObject(t, result.Elements[2], 6)
+}
+
+func TestArrayIndexExpressions(t *testing.T) {
+	tests := []struct{
+		input string
+		expected interface{}
+	}{
+		"[1, 2, 3][0]",
+		1,
+	},
+	{
+		"[1, 2, 3][1]",
+		2,
+	},
+	{
+		"[1, 2, 3][2]",
+		3,
+	},
+	{
+		"let i = 0; [1][i];",
+		1,
+	},
+	{
+		"[1, 2, 3][1 + 1];",
+		3,
+	},
+	{
+		"let myArray = [1, 2, 3]; myArray[2];",
+		3,
+	},
+	{
+		"let myArray = [1, 2, 3]; myArray[0] + myArray[1] + myArray[2];",
+		6,
+	},
+	{
+		"let myArray = [1, 2, 3]; let i = myArray[0]; myArray[i]",
+		2,
+	},
+	{
+		"[1, 2, 3][3]",
+		nil,
+	},
+	{
+		"[1, 2, 3][-1]",
+		nil,
+	},
+}
 }
