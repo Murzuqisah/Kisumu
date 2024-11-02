@@ -34,3 +34,19 @@ AST(abstract syntax tree)
     ~ Eval: evaluates the code by executing it
     ~ Print: prints the result of the execution
     ~ Loop: loop back to read the next input
+
+> parser ~ is responsible for analyzing and understanding a stream of tokens provided by a lexer.
+
+ ~ Token Precedence Handling : Manages precedence rules for operators such as `+`, `-`, `*`, `/`, `==`, `>`, `<`, and more to determine the correct order of operations during parsing.
+   
+ ~ Expression Parsing : Supports parsing of prefix expressions (like `-X`, `!X`), infix expressions (like `X + Y`, `X * Y`), and identifiers (variables).
+   
+ ~ Error Handling : Keeps track of parsing errors, especially when the next expected token doesn't match the actual one or when a parse function is missing for a token type.
+
+ ~ Statement Parsing : Parses different types of statements such as `let` and `return` statements, handling variable declarations and return values.
+
+ ~ Expression Tree Building : Builds an Abstract Syntax Tree (AST) for expressions and statements to represent the structure of the code logically.
+
+ ~ Integer Literal Parsing : Provides specific parsing rules for integer literals to convert string tokens into numeric values.
+
+ ~ Program Parsing : The `ParseProgram` function loops through the input tokens and parses the entire program into a collection of statements.
